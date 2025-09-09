@@ -1,16 +1,21 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    // Remove alias(libs.plugins.kotlin.compose), it's redundant with the buildFeatures block
-
-    // Add these two plugin aliases
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
-
     alias(libs.plugins.kotlin.compose)
 
-    id("com.google.gms.google-services")
+    // CORRECTED: Apply the google-services plugin using its alias for consistency
+    alias(libs.plugins.google.gms.services)
+}
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -25,6 +30,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+        buildConfigField(
+            "String",
+            "MAPS_API_KEY",
+            "\"${localProperties.getProperty("MAPS_API_KEY")}\""
+        )
+
+
     }
 
     buildTypes {
@@ -49,7 +63,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,29 +72,46 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.accompanist.permissions)
-
+    implementation(libs.androidx.compose.material.iconsExtended)
 
     // Navigation
-    implementation(libs.androidx.navigation.compose) // Add this
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.runtime.ktx)
 
     // ViewModel
-    implementation(libs.androidx.lifecycle.viewmodel.compose) // Add this
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)     // Add this
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     // Hilt
     implementation(libs.hilt.android)
-    implementation(libs.androidx.compose.animation.core.lint)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-
+    // Maps
     implementation("com.google.maps.android:maps-compose:4.4.1")
-    implementation(libs.androidx.navigation.runtime.ktx)
 
-    implementation(libs.androidx.compose.material.iconsExtended)
+    // Firebase
+    // CORRECTED: Use the Firebase BoM alias from your version catalog
+    implementation(platform(libs.firebase.bom))
+    // CORRECTED: Use the correct alias for Firebase Auth
+    implementation(libs.firebase.auth)
 
-    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
+    implementation(libs.firebase.firestore)
 
+    implementation(libs.play.services.location)
+
+    implementation(libs.places.sdk)
+
+    // REMOVED: This was an incorrect dependency
+    // implementation(libs.androidx.compose.animation.core.lint)
+
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    implementation("com.google.maps.android:maps-utils-ktx:3.4.0")
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -89,6 +119,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-
 }

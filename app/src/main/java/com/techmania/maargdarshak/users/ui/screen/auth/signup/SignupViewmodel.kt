@@ -2,7 +2,9 @@ package com.techmania.maargdarshak.users.ui.screen.auth.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.techmania.maargdarshak.data.Resource
 import com.techmania.maargdarshak.data.repository.AuthRepository
+import com.techmania.maargdarshak.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,7 +16,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SignupViewModel @Inject constructor(private val repository: AuthRepository) : ViewModel() {
+class SignupViewModel @Inject constructor(private val authRepository: AuthRepository,
+                                          private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignupUiState())
     val uiState = _uiState.asStateFlow()
@@ -39,24 +43,25 @@ class SignupViewModel @Inject constructor(private val repository: AuthRepository
     }
 
     fun onSignUpClicked() {
-        if (!validateInputs()) return // Keep your validation logic
+        if (!validateInputs()) return
 
-        _uiState.update { it.copy(isLoading = true, generalError = null) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
 
-        // This is the new part: calling the repository
-        repository.signUp(
-            email = _uiState.value.email,
-            password = _uiState.value.password
-        ) { isSuccess, errorMessage ->
-            if (isSuccess) {
-                // After successful signup, you can also save the user's full name to Firestore here
-                viewModelScope.launch {
+            when (val result = authRepository.signUp(_uiState.value.email, _uiState.value.password)) {
+                is Resource.Success -> {
+                    // After successful auth, create the user profile in Firestore
+                    result.data.user?.let { firebaseUser ->
+                        userRepository.createUserProfile(firebaseUser, _uiState.value.fullName)
+                    }
                     _navigationEvent.emit(NavigationEvent.NavigateToHome)
                 }
-            } else {
-                _uiState.update {
-                    it.copy(isLoading = false, generalError = errorMessage ?: "Sign up failed. Please try again.")
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, generalError = result.message)
+                    }
                 }
+                is Resource.Loading -> { /* Handled by isLoading state */ }
             }
         }
     }

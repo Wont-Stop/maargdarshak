@@ -6,17 +6,19 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.techmania.maargdarshak.R
+import com.techmania.maargdarshak.data.model.Vehicle
 
 @Composable
 fun VehicleMarker(
-    vehicle: Vehicle
+    state: VehicleUiState
 ) {
     Marker(
-        state = MarkerState(position = vehicle.position),
-        title = "Vehicle ${vehicle.id}",
-        // Use different icons based on vehicle type
-        icon = BitmapDescriptorFactory.fromResource(R.drawable.busicon) // Replace with your marker icon
+        state = MarkerState(position = state.position),
+        title = "Vehicle ${state.id}",
+        snippet = "Live Location",
+        icon = BitmapDescriptorFactory.fromResource(R.drawable.busicon)
     )
+
 }
 
 @Composable

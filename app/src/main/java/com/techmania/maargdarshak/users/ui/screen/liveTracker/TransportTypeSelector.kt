@@ -2,13 +2,13 @@ package com.techmania.maargdarshak.users.ui.screen.liveTracker
 
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,7 +23,7 @@ fun TransportTypeSelector(
 ) {
     ExposedDropdownMenuBox(
         expanded = isExpanded,
-        onExpandedChange = { onExpanded() },
+        onExpandedChange = { if (!isExpanded) onExpanded() },
         modifier = modifier
     ) {
         OutlinedTextField(
@@ -36,7 +36,8 @@ fun TransportTypeSelector(
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = selectedType.icon),
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp) // <-- FIX: Added size modifier
                 )
             },
             trailingIcon = {
@@ -59,7 +60,8 @@ fun TransportTypeSelector(
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = type.icon),
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp) // <-- FIX: Added size modifier for consistency
                         )
                     }
                 )

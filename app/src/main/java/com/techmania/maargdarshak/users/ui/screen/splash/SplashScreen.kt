@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.techmania.maargdarshak.R // IMPORTANT: Make sure you have this R file
+import com.techmania.maargdarshak.users.navigation.Screen
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -43,13 +44,15 @@ fun SplashScreen(
         viewModel.navigationEvent.collectLatest { event ->
             when (event) {
                 is SplashViewModel.SplashNavigation.NavigateToAuth -> {
-                    navController.navigate("login") {
-                        popUpTo("splash") { inclusive = true }
+                    // Navigate to the Login screen
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
                 is SplashViewModel.SplashNavigation.NavigateToHome -> {
-                    navController.navigate("home") {
-                        popUpTo("splash") { inclusive = true }
+                    // UPDATED: Navigate to the main screen container
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
             }

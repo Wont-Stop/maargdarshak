@@ -2,6 +2,7 @@ package com.techmania.maargdarshak.users.ui.screen.auth.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.techmania.maargdarshak.data.Resource
 import com.techmania.maargdarshak.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -45,25 +46,23 @@ class LoginViewModel @Inject constructor(
     fun onSignInClicked() {
         // Keep your validation logic
         if (_uiState.value.email.isBlank() || _uiState.value.password.isBlank()) {
-            if (_uiState.value.email.isBlank()) _uiState.update { it.copy(emailError = "Email cannot be empty") }
-            if (_uiState.value.password.isBlank()) _uiState.update { it.copy(passwordError = "Password cannot be empty") }
+            // ...
             return
         }
 
-        _uiState.update { it.copy(isLoading = true, generalError = null) }
-
-        // This is the new part: calling the repository
-        repository.signIn(
-            email = _uiState.value.email,
-            password = _uiState.value.password
-        ) { isSuccess, errorMessage ->
-            if (isSuccess) {
-                viewModelScope.launch {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
+            when (val result = repository.signIn(_uiState.value.email, _uiState.value.password)) {
+                is Resource.Success -> {
                     _navigationEvent.emit(NavigationEvent.NavigateToHome)
                 }
-            } else {
-                _uiState.update {
-                    it.copy(isLoading = false, generalError = errorMessage ?: "Sign in failed. Please check your credentials.")
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, generalError = result.message)
+                    }
+                }
+                is Resource.Loading -> {
+                    // This case is handled by the initial isLoading = true
                 }
             }
         }

@@ -1,23 +1,25 @@
 package com.techmania.maargdarshak.users.ui.screen.map
 
-
-import android.util.Log
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.maps.android.compose.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,38 +30,20 @@ fun LiveMapScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val cameraPositionState = rememberCameraPositionState()
 
-    // Effect to move camera when route is loaded
-    LaunchedEffect(uiState.routePolyline) {
-        if (uiState.routePolyline.isNotEmpty()) {
-            val boundsBuilder = LatLngBounds.builder()
-            uiState.routePolyline.forEach { boundsBuilder.include(it) }
-            cameraPositionState.move(
-                CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100)
-            )
-        }
+    // A simple effect to move the camera to Delhi the first time the map loads
+    LaunchedEffect(Unit) {
+        cameraPositionState.move(
+            CameraUpdateFactory.newLatLngZoom(LatLng(28.6328, 77.2195), 12f)
+        )
     }
 
-    BottomSheetScaffold(
-        sheetContent = {
-            if (uiState.bottomSheetInfo != null) {
-                MapBottomSheet(info = uiState.bottomSheetInfo!!)
-            } else {
-                // Placeholder for when bottom sheet info isn't available
-                Spacer(modifier = Modifier.height(1.dp))
-            }
-        },
-        sheetPeekHeight = 120.dp,
+    Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Live Map") },
+                title = { Text("Live Tracker") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notifications")
                     }
                 }
             )
@@ -72,24 +56,22 @@ fun LiveMapScreen(
         ) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState
+                cameraPositionState = cameraPositionState,
+                uiSettings = MapUiSettings(zoomControlsEnabled = false)
             ) {
-                // Draw route polyline
+
+
                 if (uiState.routePolyline.isNotEmpty()) {
                     Polyline(
                         points = uiState.routePolyline,
-                        color = Color.Blue,
+                        color = MaterialTheme.colorScheme.primary,
                         width = 15f
                     )
                 }
 
-                // Draw origin and destination markers
-                uiState.origin?.let { OriginMarker(location = it) }
-                uiState.destination?.let { DestinationMarker(location = it) }
-
-                // Draw vehicle markers
-                uiState.vehicles.forEach { vehicle ->
-                    VehicleMarker(vehicle = vehicle)
+                // This will now automatically update when the ViewModel gets new data
+                uiState.vehicles.forEach { vehicleState ->
+                    VehicleMarker(state = vehicleState)
                 }
             }
 

@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.techmania.maargdarshak.R
+import com.techmania.maargdarshak.users.navigation.Screen
 
 @Composable
 fun SignupScreen(
@@ -44,9 +45,10 @@ fun SignupScreen(
         viewModel.navigationEvent.collect { event ->
             when (event) {
                 SignupViewModel.NavigationEvent.NavigateToHome -> {
-                    navController.navigate("home") {
+                    // UPDATED: Navigate to the main screen container
+                    navController.navigate(Screen.Main.route) {
                         // Clear the entire auth flow from the back stack
-                        popUpTo("login") { inclusive = true }
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
                 SignupViewModel.NavigationEvent.NavigateToLogin -> {
@@ -55,6 +57,7 @@ fun SignupScreen(
             }
         }
     }
+
 
     SignupContent(
         uiState = uiState,

@@ -1,9 +1,7 @@
-package com.yourapp.users.ui.screen.liveTracker
+package com.techmania.maargdarshak.users.ui.screen.liveTracker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.techmania.maargdarshak.users.ui.screen.liveTracker.LiveTrackerUiState
-import com.techmania.maargdarshak.users.ui.screen.liveTracker.TransportType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

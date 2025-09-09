@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.techmania.maargdarshak.R // IMPORTANT: Add your social media icons to res/drawable
+import com.techmania.maargdarshak.users.navigation.Screen
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -45,13 +46,13 @@ fun LoginScreen(
         viewModel.navigationEvent.collectLatest { event ->
             when (event) {
                 LoginViewModel.NavigationEvent.NavigateToHome -> {
-                    // Navigate to home and clear the auth backstack
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
+                    // UPDATED: Navigate to the main screen container
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
                 LoginViewModel.NavigationEvent.NavigateToSignup -> {
-                    navController.navigate("signup")
+                    navController.navigate(Screen.Signup.route)
                 }
             }
         }

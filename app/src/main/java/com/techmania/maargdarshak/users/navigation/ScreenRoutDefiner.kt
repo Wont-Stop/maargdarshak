@@ -6,10 +6,13 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Signup : Screen("signup")
     object Permission : Screen("permission")
+    object Main : Screen("main") // <-- ADD THIS LINE
     object Home : Screen("home")
     object LiveTracker : Screen("live_tracker")
     object MyTrips : Screen("my_trips")
     object Settings : Screen("settings")
+    object PlaceSearch : Screen("place_search") // <-- ADD THIS LINE
+
 
     // Route for the map screen with arguments
     object LiveMap : Screen("map/{origin}/{destination}/{transportType}") {
