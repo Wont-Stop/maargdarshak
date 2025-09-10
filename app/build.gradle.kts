@@ -59,6 +59,8 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true // <-- ADD THIS LINE
+
     }
 }
 

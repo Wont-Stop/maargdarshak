@@ -23,7 +23,7 @@ fun TransportTypeSelector(
 ) {
     ExposedDropdownMenuBox(
         expanded = isExpanded,
-        onExpandedChange = { if (!isExpanded) onExpanded() },
+        onExpandedChange = { onExpanded() },
         modifier = modifier
     ) {
         OutlinedTextField(

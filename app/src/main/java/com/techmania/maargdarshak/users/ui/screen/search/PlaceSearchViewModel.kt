@@ -3,7 +3,6 @@ package com.techmania.maargdarshak.users.ui.screen.search
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.libraries.places.api.model.Place
 import com.techmania.maargdarshak.data.Resource
 import com.techmania.maargdarshak.data.repository.PlacesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +13,7 @@ import javax.inject.Inject
 
 data class PlaceSearchUiState(
     val query: String = "",
-    val searchResults: List<Place.Field> = emptyList(),
+    val searchResults: List<PlacesRepository.PlaceSuggestion> = emptyList(), // UPDATED
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -30,9 +29,9 @@ class PlaceSearchViewModel @Inject constructor(
 
     fun onQueryChange(newQuery: String) {
         uiState.value = uiState.value.copy(query = newQuery)
-        searchJob?.cancel() // Cancel the previous search job
+        searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            delay(300) // Debounce: wait for 300ms of no typing
+            delay(300) // Debounce
             searchPlaces(newQuery)
         }
     }
@@ -42,7 +41,6 @@ class PlaceSearchViewModel @Inject constructor(
             uiState.value = uiState.value.copy(searchResults = emptyList())
             return
         }
-
         viewModelScope.launch {
             uiState.value = uiState.value.copy(isLoading = true)
             when (val result = placesRepository.getAutocompletePredictions(query)) {
@@ -58,7 +56,7 @@ class PlaceSearchViewModel @Inject constructor(
                         error = result.message
                     )
                 }
-                is Resource.Loading -> { /* Handled by isLoading state */ }
+                is Resource.Loading -> {}
             }
         }
     }

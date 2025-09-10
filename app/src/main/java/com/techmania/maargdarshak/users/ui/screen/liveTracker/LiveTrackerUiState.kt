@@ -7,7 +7,6 @@ import com.techmania.maargdarshak.R
  * Enum representing the different types of transport available for tracking.
  */
 enum class TransportType(val displayName: String, val icon: Int) {
-    // Replace R.drawable icons with your actual transport icons
     BUS("Bus", R.drawable.busicon),
     TAXI("Taxi", R.drawable.taxi)
 }
@@ -22,9 +21,25 @@ enum class TransportType(val displayName: String, val icon: Int) {
  * @param isDropdownExpanded Controls the visibility of the transport type dropdown.
  */
 data class LiveTrackerUiState(
-    val origin: String = "Current location",
+    // Fields for the selected values
+    val origin: String = "",
     val destination: String = "",
+
+    // Fields to manage the autocomplete state for the ORIGIN input
+    val originQuery: String = "",
+    val originSuggestions: List<String> = emptyList(),
+    val isOriginDropdownExpanded: Boolean = false,
+
+    // Fields to manage the autocomplete state for the DESTINATION input
+    val destinationQuery: String = "",
+    val destinationSuggestions: List<String> = emptyList(),
+    val isDestinationDropdownExpanded: Boolean = false,
+
+    // Fields for Transport Type selection
     val selectedTransportType: TransportType = TransportType.BUS,
-    val availableTransportTypes: List<TransportType> = TransportType.values().toList(),
-    val isDropdownExpanded: Boolean = false
+    val isTransportDropdownExpanded: Boolean = false, // UPDATED: Renamed for clarity
+
+    // General state
+    val isLoading: Boolean = false,
+    val error: String? = null
 )

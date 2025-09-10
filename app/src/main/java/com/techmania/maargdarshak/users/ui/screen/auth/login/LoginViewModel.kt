@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.techmania.maargdarshak.data.Resource
 import com.techmania.maargdarshak.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -16,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val repository: AuthRepository // Inject the repository
+    private val repository: AuthRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
@@ -40,13 +39,9 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
     }
 
-    // In file: com/techmania/maargdarshak/users/ui/screen/auth/login/LoginViewModel.kt
-
-
     fun onSignInClicked() {
-        // Keep your validation logic
         if (_uiState.value.email.isBlank() || _uiState.value.password.isBlank()) {
-            // ...
+            // Validation logic...
             return
         }
 
@@ -54,16 +49,15 @@ class LoginViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, generalError = null) }
             when (val result = repository.signIn(_uiState.value.email, _uiState.value.password)) {
                 is Resource.Success -> {
-                    _navigationEvent.emit(NavigationEvent.NavigateToHome)
+                    // UPDATED: Navigate to the permission screen first
+                    _navigationEvent.emit(NavigationEvent.NavigateToPermission)
                 }
                 is Resource.Error -> {
                     _uiState.update {
                         it.copy(isLoading = false, generalError = result.message)
                     }
                 }
-                is Resource.Loading -> {
-                    // This case is handled by the initial isLoading = true
-                }
+                is Resource.Loading -> {}
             }
         }
     }
@@ -74,18 +68,16 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    // Placeholder for Forgot Password navigation
     fun onForgotPasswordClicked() {
         // TODO: Implement navigation to Forgot Password screen
     }
 
-    // Placeholders for Social Logins
     fun onGoogleSignInClicked() { /* TODO: Implement Google Sign-In */ }
     fun onAppleSignInClicked() { /* TODO: Implement Apple Sign-In */ }
     fun onFacebookSignInClicked() { /* TODO: Implement Facebook Sign-In */ }
 
     sealed class NavigationEvent {
-        object NavigateToHome : NavigationEvent()
+        object NavigateToPermission : NavigationEvent() // UPDATED
         object NavigateToSignup : NavigationEvent()
     }
 }

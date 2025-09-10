@@ -1,6 +1,8 @@
 package com.techmania.maargdarshak.di
 
 import android.app.Application
+import android.location.Geocoder
+import com.google.android.gms.location.LocationServices
 import com.google.android.libraries.places.api.Places
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -11,6 +13,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.Locale
 import javax.inject.Singleton
 
 @Module
@@ -49,4 +52,14 @@ object AppModule {
     fun provideDirectionsApiService(retrofit: Retrofit): DirectionsApiService =
     retrofit.create(DirectionsApiService::class.java)
 
+
+
+    @Provides
+    @Singleton
+    fun provideFusedLocationProviderClient(app: Application) =
+        LocationServices.getFusedLocationProviderClient(app)
+
+    @Provides
+    @Singleton
+    fun provideGeocoder(app: Application): Geocoder = Geocoder(app, Locale.getDefault())
 }

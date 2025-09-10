@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -54,20 +55,26 @@ fun PlaceSearchScreen(
                     CircularProgressIndicator()
                 }
             } else {
+                // In PlaceSearchScreen.kt, inside the else block
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(uiState.searchResults) { place ->
-                        // In a real app, 'place' would have more details.
-                        // For now, we are just displaying a simplified version.
-                        Text(
-                            text = "Result: ${place.name}", // Example display
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    // TODO: Pass the selected place back to LiveTrackerScreen
+                                    // Pass the full address as the result for now
+                                    val fullAddress = "${place.primaryText}, ${place.secondaryText}"
+                                    navController.previousBackStackEntry
+                                        ?.savedStateHandle
+                                        ?.set("selected_place", fullAddress)
                                     navController.popBackStack()
                                 }
                                 .padding(vertical = 12.dp)
-                        )
+                        ) {
+                            Text(text = place.primaryText, fontWeight = FontWeight.Bold)
+                            Text(text = place.secondaryText, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Divider()
                     }
                 }
             }

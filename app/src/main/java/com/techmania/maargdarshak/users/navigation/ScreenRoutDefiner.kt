@@ -20,4 +20,11 @@ sealed class Screen(val route: String) {
             return "map/$origin/$destination/$transportType"
         }
     }
+
+    // ADD THIS NEW ROUTE DEFINITION
+    object BusResults : Screen("bus_results/{origin}/{destination}") {
+        fun createRoute(origin: String, destination: String): String {
+            return "bus_results/$origin/$destination"
+        }
+    }
 }

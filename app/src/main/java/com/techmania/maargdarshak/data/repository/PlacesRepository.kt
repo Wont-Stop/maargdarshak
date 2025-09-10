@@ -11,26 +11,31 @@ import javax.inject.Inject
 class PlacesRepository @Inject constructor(
     private val placesClient: PlacesClient
 ) {
+
+    data class PlaceSuggestion(val placeId: String, val primaryText: String, val secondaryText: String)
+
     /**
      * Fetches place autocomplete predictions based on a user's query.
      */
-    suspend fun getAutocompletePredictions(query: String): Resource<List<Place.Field>> {
+    suspend fun getAutocompletePredictions(query: String): Resource<List<PlaceSuggestion>> {
         return try {
             val token = AutocompleteSessionToken.newInstance()
             val request = FindAutocompletePredictionsRequest.builder()
                 .setSessionToken(token)
                 .setQuery(query)
-                // Bias results to a specific country for better relevance
                 .setCountries("IN") // Biasing results for India
                 .build()
 
             val response = placesClient.findAutocompletePredictions(request).await()
-            val placeFields = response.autocompletePredictions.map {
-                // We will just return the primary and secondary text for now
-                // In a real app, you would fetch more details using the placeId
-                listOf(Place.Field.NAME, Place.Field.ADDRESS)
+            // CORRECTED: Map the response to our new PlaceSuggestion data class
+            val suggestions = response.autocompletePredictions.map { prediction ->
+                PlaceSuggestion(
+                    placeId = prediction.placeId,
+                    primaryText = prediction.getPrimaryText(null).toString(),
+                    secondaryText = prediction.getSecondaryText(null).toString()
+                )
             }
-            Resource.Success(placeFields.flatten())
+            Resource.Success(suggestions)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "An error occurred fetching places.")
         }

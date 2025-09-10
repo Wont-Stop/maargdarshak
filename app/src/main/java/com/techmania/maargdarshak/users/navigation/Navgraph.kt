@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.techmania.maargdarshak.users.ui.screen.auth.login.LoginScreen
 import com.techmania.maargdarshak.users.ui.screen.auth.signup.SignupScreen
+import com.techmania.maargdarshak.users.ui.screen.busresults.BusResultsScreen
 import com.techmania.maargdarshak.users.ui.screen.main.MainScreen
 import com.techmania.maargdarshak.users.ui.screen.map.LiveMapScreen
 import com.techmania.maargdarshak.users.ui.screen.permissions.PermissionRequestScreen
@@ -37,9 +38,9 @@ fun NavGraph(
             PermissionRequestScreen(navController = navController)
         }
 
-        // This is the new main entry point for your app after login
         composable(route = Screen.Main.route) {
-            MainScreen()
+            // UPDATED: Pass the top-level navController into MainScreen
+            MainScreen(navController = navController)
         }
 
         // The map screen remains a separate destination outside the bottom nav
@@ -57,6 +58,17 @@ fun NavGraph(
         // ADD THIS NEW BLOCK for the search screen
         composable(route = Screen.PlaceSearch.route) {
             PlaceSearchScreen(navController = navController)
+        }
+
+        composable(
+            route = Screen.BusResults.route,
+            arguments = listOf(
+                navArgument("origin") { type = NavType.StringType },
+                navArgument("destination") { type = NavType.StringType }
+            )
+        ) {
+            // The ViewModel will automatically receive these arguments
+            BusResultsScreen(navController = navController)
         }
 
     }

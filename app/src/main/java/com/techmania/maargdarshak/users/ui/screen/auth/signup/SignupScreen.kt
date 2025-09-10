@@ -44,15 +44,14 @@ fun SignupScreen(
     LaunchedEffect(key1 = true) {
         viewModel.navigationEvent.collect { event ->
             when (event) {
-                SignupViewModel.NavigationEvent.NavigateToHome -> {
-                    // UPDATED: Navigate to the main screen container
-                    navController.navigate(Screen.Main.route) {
-                        // Clear the entire auth flow from the back stack
+                SignupViewModel.NavigationEvent.NavigateToPermission -> {
+                    // UPDATED: Navigate to the permission screen
+                    navController.navigate(Screen.Permission.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
                 SignupViewModel.NavigationEvent.NavigateToLogin -> {
-                    navController.popBackStack() // Go back to the login screen
+                    navController.popBackStack()
                 }
             }
         }

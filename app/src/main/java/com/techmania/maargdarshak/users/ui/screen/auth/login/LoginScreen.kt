@@ -45,13 +45,14 @@ fun LoginScreen(
     LaunchedEffect(key1 = true) {
         viewModel.navigationEvent.collectLatest { event ->
             when (event) {
-                LoginViewModel.NavigationEvent.NavigateToHome -> {
-                    // UPDATED: Navigate to the main screen container
-                    navController.navigate(Screen.Main.route) {
+                // UPDATED: Listen for the correct event
+                is LoginViewModel.NavigationEvent.NavigateToPermission -> {
+                    // UPDATED: Navigate to the permission screen
+                    navController.navigate(Screen.Permission.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
-                LoginViewModel.NavigationEvent.NavigateToSignup -> {
+                is LoginViewModel.NavigationEvent.NavigateToSignup -> {
                     navController.navigate(Screen.Signup.route)
                 }
             }
