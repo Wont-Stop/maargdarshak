@@ -2,8 +2,8 @@ package com.techmania.maargdarshak.data.repository
 
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.auth.User
 import com.techmania.maargdarshak.data.Resource
+import com.techmania.maargdarshak.data.model.User
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -28,10 +28,14 @@ class UserRepository @Inject constructor(
     /**
      * Fetches a user's profile from Firestore based on their UID.
      */
+    // Make sure this import exists, or add it:
+//... inside the UserRepository class
+
     suspend fun getUserProfile(uid: String): Resource<User?> {
         return try {
             val document = firestore.collection("users").document(uid).get().await()
-            val user = document.toObject(User::class.java)
+            // Explicitly use your app's data model for conversion
+            val user = document.toObject(com.techmania.maargdarshak.data.model.User::class.java)
             Resource.Success(user)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to fetch user profile.")
@@ -41,7 +45,7 @@ class UserRepository @Inject constructor(
     /**
      * Updates a user's profile document in Firestore.
      */
-    suspend fun updateUserProfile(uid: String, updatedUser: User): Resource<Unit> {
+    suspend fun updateUserProfile(uid: String, updatedUser: com.techmania.maargdarshak.data.model.User): Resource<Unit> {
         return try {
             firestore.collection("users").document(uid).set(updatedUser).await()
             Resource.Success(Unit)

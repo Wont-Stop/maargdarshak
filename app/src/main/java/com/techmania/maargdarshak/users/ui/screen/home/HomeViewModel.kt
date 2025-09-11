@@ -2,46 +2,67 @@ package com.techmania.maargdarshak.users.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.techmania.maargdarshak.data.Resource
+import com.techmania.maargdarshak.data.repository.AuthRepository
+import com.techmania.maargdarshak.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
 
+    // To handle one-off navigation events
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
     init {
-        fetchHomeScreenData()
+        // Fetch real user data instead of dummy data
+        loadUserProfile()
     }
 
-    private fun fetchHomeScreenData() {
+    fun loadUserProfile() {
         viewModelScope.launch {
-            // Start in a loading state
             _uiState.update { it.copy(isLoading = true) }
+            val currentUser = authRepository.getCurrentUser()
+            if (currentUser == null) {
+                // Handle user not logged in scenario if necessary
+                _uiState.update { it.copy(isLoading = false, error = "User not found") }
+                return@launch
+            }
 
-            // Simulate a network delay
-            delay(1500)
-
-            // Hardcoded data for demonstration
-            val dummyTrips = listOf(
-                RecentTrip("1", "Bole", "Piassa", "7.2 km", "18 mins", "35 ETB"),
-                RecentTrip("2", "Kebena", "Meskel Square", "5.4 km", "25 mins", "10 ETB"),
-                RecentTrip("3", "Bole Airport", "Africa Avenue", "12.8 km", "45 mins", "20 ETB")
-            )
-
-            _uiState.update {
-                it.copy(
-                    userName = "John Cena",
-                    userLocation = "Addis Ababa, Ethiopia",
-                    recentTrips = dummyTrips,
-                    isLoading = false
-                )
+            when (val result = userRepository.getUserProfile(currentUser.uid)) {
+                is Resource.Success -> {
+                    val user = result.data
+                    _uiState.update {
+                        it.copy(
+                            // Use real user data, providing defaults if empty
+                            userName = user?.fullName?.takeIf { name -> name.isNotBlank() } ?: "Guest User",
+                            userLocation = user?.address?.takeIf { addr -> addr.isNotBlank() } ?: "No location set",
+                            isLoading = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.message
+                        )
+                    }
+                }
+                else -> { /* No-op for Loading state */ }
             }
         }
     }
@@ -51,4 +72,20 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     fun onRecentTripClicked(tripId: String) { /* TODO: Navigate to trip details screen */ }
     fun onNotificationsClicked() { /* TODO: Navigate to notifications screen */ }
     fun onSearchClicked() { /* TODO: Navigate to search screen */ }
+
+    /**
+     * Called when the user taps on the profile picture or name in the top bar.
+     */
+    fun onProfileClicked() {
+        viewModelScope.launch {
+            _navigationEvent.emit(NavigationEvent.NavigateToEditProfile)
+        }
+    }
+
+    /**
+     * Sealed class for one-off navigation events.
+     */
+    sealed class NavigationEvent {
+        object NavigateToEditProfile : NavigationEvent()
+    }
 }

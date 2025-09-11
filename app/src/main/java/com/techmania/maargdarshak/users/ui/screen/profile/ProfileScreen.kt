@@ -1,6 +1,5 @@
 package com.techmania.maargdarshak.users.ui.screen.profile
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,11 +21,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.techmania.maargdarshak.R
+import com.techmania.maargdarshak.users.navigation.Screen
+import com.techmania.maargdarshak.users.ui.screen.shared.AppTopBar
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,24 +38,23 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = true) {
-        viewModel.navigationEvent.collect { event ->
+        viewModel.navigationEvent.collectLatest { event ->
             when (event) {
                 is ProfileViewModel.NavigationEvent.NavigateToLogin -> {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
+                    navController.navigate(Screen.Login.route) {
+                        // Clear the entire back stack up to the start destination
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     }
                 }
                 is ProfileViewModel.NavigationEvent.NavigateToEditProfile -> {
-                    navController.navigate("edit_profile")
+                    navController.navigate(Screen.EditProfile.route)
                 }
             }
         }
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("My Profile") })
-        }
+        topBar = { AppTopBar(title = "My Profile", navController = navController) }
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -70,6 +70,7 @@ fun ProfileScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Note: Make sure you have a `profile.png` or similar in `res/drawable`
                 Image(
                     painter = painterResource(id = R.drawable.profile),
                     contentDescription = "User Avatar",
@@ -107,7 +108,10 @@ fun ProfileScreen(
                     Text("Sign Out")
                 }
             }
+        } else if (uiState.error != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = uiState.error!!, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }
-

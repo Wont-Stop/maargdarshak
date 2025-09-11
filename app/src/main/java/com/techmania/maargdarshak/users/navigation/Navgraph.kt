@@ -13,6 +13,7 @@ import com.techmania.maargdarshak.users.ui.screen.busresults.BusResultsScreen
 import com.techmania.maargdarshak.users.ui.screen.main.MainScreen
 import com.techmania.maargdarshak.users.ui.screen.map.LiveMapScreen
 import com.techmania.maargdarshak.users.ui.screen.permissions.PermissionRequestScreen
+import com.techmania.maargdarshak.users.ui.screen.profile.EditProfileScreen
 import com.techmania.maargdarshak.users.ui.screen.search.PlaceSearchScreen
 import com.techmania.maargdarshak.users.ui.screen.splash.SplashScreen
 
@@ -26,6 +27,7 @@ fun NavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+        // ... (other composable routes remain the same)
         composable(route = Screen.Splash.route) {
             SplashScreen(navController = navController)
         }
@@ -43,12 +45,14 @@ fun NavGraph(
         }
 
         composable(route = Screen.Main.route) {
-            // UPDATED: Pass the top-level navController into MainScreen
             MainScreen(navController = navController)
         }
 
+        // ADD THIS to handle navigation to the EditProfileScreen
+        composable(route = Screen.EditProfile.route) {
+            EditProfileScreen(navController = navController)
+        }
 
-        // ADD THIS NEW BLOCK for the search screen
         composable(route = Screen.PlaceSearch.route) {
             PlaceSearchScreen(navController = navController)
         }
@@ -60,7 +64,6 @@ fun NavGraph(
                 navArgument("destination") { type = NavType.StringType }
             )
         ) {
-            // The ViewModel will automatically receive these arguments
             BusResultsScreen(navController = navController)
         }
 

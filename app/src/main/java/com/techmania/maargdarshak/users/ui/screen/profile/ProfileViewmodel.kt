@@ -1,6 +1,5 @@
 package com.techmania.maargdarshak.users.ui.screen.profile
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.techmania.maargdarshak.data.Resource
@@ -35,16 +34,16 @@ class ProfileViewModel @Inject constructor(
     private fun loadUserProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val currentUser = authRepository.getCurrentUser()
-            if (currentUser == null) {
+            val currentFirebaseUser = authRepository.getCurrentUser()
+            if (currentFirebaseUser == null) {
                 _uiState.update { it.copy(isLoading = false, error = "User not logged in.") }
                 // This could also trigger a navigation event to the login screen
                 return@launch
             }
 
-            when (val result = userRepository.getUserProfile(currentUser.uid)) {
+            when (val result = userRepository.getUserProfile(currentFirebaseUser.uid)) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(isLoading = false, user = result.data as User?) }
+                    _uiState.update { it.copy(isLoading = false, user = result.data) }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.message) }
@@ -72,4 +71,3 @@ class ProfileViewModel @Inject constructor(
         object NavigateToEditProfile : NavigationEvent()
     }
 }
-

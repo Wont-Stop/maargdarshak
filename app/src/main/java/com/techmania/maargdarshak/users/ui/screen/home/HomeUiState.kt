@@ -24,5 +24,6 @@ data class HomeUiState(
     val userName: String = "",
     val userLocation: String = "",
     val recentTrips: List<RecentTrip> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val error: String? = null // <-- Add this line
 )
