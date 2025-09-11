@@ -112,6 +112,8 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
 
     implementation("com.google.maps.android:maps-utils-ktx:3.4.0")
+    implementation(libs.google.auth)
+
 
     // Testing
     testImplementation(libs.junit)

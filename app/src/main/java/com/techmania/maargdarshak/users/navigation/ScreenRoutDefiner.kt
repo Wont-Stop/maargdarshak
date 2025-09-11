@@ -12,12 +12,13 @@ sealed class Screen(val route: String) {
     object MyTrips : Screen("my_trips")
     object Settings : Screen("settings")
     object PlaceSearch : Screen("place_search") // <-- ADD THIS LINE
+    object ForgotPassword : Screen("forgot_password") // <-- ADD THIS
 
 
     // Route for the map screen with arguments
-    object LiveMap : Screen("map/{origin}/{destination}/{transportType}") {
-        fun createRoute(origin: String, destination: String, transportType: String): String {
-            return "map/$origin/$destination/$transportType"
+    object LiveMap : Screen("map/{busId}/{routeId}") {
+        fun createRoute(busId: String, routeId: String): String {
+            return "map/$busId/$routeId"
         }
     }
 

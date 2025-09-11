@@ -1,5 +1,7 @@
 package com.techmania.maargdarshak.users.ui.screen.auth.login
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,9 +16,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,9 +35,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.techmania.maargdarshak.R // IMPORTANT: Add your social media icons to res/drawable
+import androidx.navigation.compose.rememberNavController
+import com.techmania.maargdarshak.R
 import com.techmania.maargdarshak.users.navigation.Screen
 import kotlinx.coroutines.flow.collectLatest
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 
 @Composable
 fun LoginScreen(
@@ -41,13 +49,34 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = { result ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)!!
+                viewModel.onGoogleSignInResult(account.idToken)
+            } catch (e: ApiException) {
+                viewModel.onGoogleSignInResult(null)
+            }
+        }
+    )
+
+    val googleSignInClient = remember {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    // UPDATED: This LaunchedEffect now handles both navigation events correctly
     LaunchedEffect(key1 = true) {
         viewModel.navigationEvent.collectLatest { event ->
             when (event) {
-                // UPDATED: Listen for the correct event
                 is LoginViewModel.NavigationEvent.NavigateToPermission -> {
-                    // UPDATED: Navigate to the permission screen
                     navController.navigate(Screen.Permission.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -60,22 +89,29 @@ fun LoginScreen(
     }
 
     LoginContent(
+        navController = navController,
         uiState = uiState,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
         onRememberMeChange = viewModel::onRememberMeChange,
         onTogglePasswordVisibility = viewModel::onTogglePasswordVisibility,
         onSignInClicked = viewModel::onSignInClicked,
-        onForgotPasswordClicked = viewModel::onForgotPasswordClicked,
-        onGoogleSignInClicked = viewModel::onGoogleSignInClicked,
-        onAppleSignInClicked = viewModel::onAppleSignInClicked,
-        onFacebookSignInClicked = viewModel::onFacebookSignInClicked,
+        onForgotPasswordClicked = {
+            navController.navigate(Screen.ForgotPassword.route)
+        },
+        onGoogleSignInClicked = {
+            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+        },
+        onAppleSignInClicked = { /* TODO */ },
+        onFacebookSignInClicked = { /* TODO */ },
+        // UPDATED: The "Create Account" click now calls the ViewModel
         onCreateAccountClicked = viewModel::onCreateAccountClicked
     )
 }
 
 @Composable
 private fun LoginContent(
+    navController: NavController,
     uiState: LoginUiState,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -102,22 +138,18 @@ private fun LoginContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(60.dp))
-
             Text(
                 text = "Welcome Back",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = purpleColor
             )
-
             Spacer(modifier = Modifier.height(8.dp))
-
             Text(
                 text = "Access your trips and transport info in seconds.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             Spacer(modifier = Modifier.height(32.dp))
 
             if (uiState.generalError != null) {
@@ -129,7 +161,6 @@ private fun LoginContent(
                 )
             }
 
-            // Email Field
             TextField(
                 value = uiState.email,
                 onValueChange = onEmailChange,
@@ -142,14 +173,10 @@ private fun LoginContent(
                 shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent
                 )
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Password Field
             TextField(
                 value = uiState.password,
                 onValueChange = onPasswordChange,
@@ -171,13 +198,10 @@ private fun LoginContent(
                 shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent
                 )
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -194,9 +218,7 @@ private fun LoginContent(
                     Text("Forgot password?", color = purpleColor, style = MaterialTheme.typography.bodySmall)
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
             Button(
                 onClick = onSignInClicked,
                 enabled = !uiState.isLoading,
@@ -207,18 +229,12 @@ private fun LoginContent(
                 colors = ButtonDefaults.buttonColors(containerColor = purpleColor)
             ) {
                 if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
                 } else {
                     Text("Sign In", fontSize = 16.sp)
                 }
             }
-
             Spacer(modifier = Modifier.height(32.dp))
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -227,9 +243,7 @@ private fun LoginContent(
                 Text("Or", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Divider(modifier = Modifier.weight(1f))
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -241,11 +255,8 @@ private fun LoginContent(
                 Spacer(modifier = Modifier.width(24.dp))
                 SocialLoginButton(iconRes = R.drawable.facebook, onClick = onFacebookSignInClicked)
             }
-
             Spacer(modifier = Modifier.weight(1f))
-
             CreateAccountText(onCreateAccountClicked)
-
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -277,7 +288,6 @@ fun CreateAccountText(onCreateAccount: () -> Unit) {
         }
         pop()
     }
-
     ClickableText(
         text = annotatedString,
         onClick = { offset ->
@@ -294,6 +304,7 @@ fun CreateAccountText(onCreateAccount: () -> Unit) {
 @Composable
 fun LoginScreenPreview() {
     LoginContent(
+        navController = rememberNavController(),
         uiState = LoginUiState(emailError = "Invalid email format"),
         onEmailChange = {},
         onPasswordChange = {},

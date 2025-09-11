@@ -9,5 +9,7 @@ import com.google.firebase.firestore.GeoPoint
 data class Vehicle(
     val id: String = "",
     val location: GeoPoint = GeoPoint(0.0, 0.0),
-    val routeId: String = ""
+    val routeId: String = "",
+    val speed: Long = 0, // Add this
+    val nextStop: String = "" // Add this
 )

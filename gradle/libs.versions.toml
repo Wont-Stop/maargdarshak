@@ -22,6 +22,7 @@ firebaseAuthKtx = "24.0.1"
 playServicesLocation = "21.3.0"
 places = "3.5.0"
 retrofit = "2.9.0"
+googleAuth = "21.2.0"
 
 
 
@@ -48,7 +49,7 @@ androidx-compose-material-iconsExtended = { group = "androidx.compose.material",
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 # You will need this later for Google Sign-In
-google-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "21.2.0" }
+google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googleAuth" }
 
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 

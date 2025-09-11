@@ -62,6 +62,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+
     fun onCreateAccountClicked() {
         viewModelScope.launch {
             _navigationEvent.emit(NavigationEvent.NavigateToSignup)
@@ -75,6 +76,26 @@ class LoginViewModel @Inject constructor(
     fun onGoogleSignInClicked() { /* TODO: Implement Google Sign-In */ }
     fun onAppleSignInClicked() { /* TODO: Implement Apple Sign-In */ }
     fun onFacebookSignInClicked() { /* TODO: Implement Facebook Sign-In */ }
+
+
+    fun onGoogleSignInResult(idToken: String?) {
+        if (idToken == null) {
+            _uiState.update { it.copy(generalError = "Google Sign-In failed.") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            when (val result = repository.signInWithGoogle(idToken)) {
+                is Resource.Success -> {
+                    _navigationEvent.emit(NavigationEvent.NavigateToPermission)
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false, generalError = result.message) }
+                }
+                else -> {}
+            }
+        }
+    }
 
     sealed class NavigationEvent {
         object NavigateToPermission : NavigationEvent() // UPDATED

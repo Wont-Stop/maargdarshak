@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.techmania.maargdarshak.users.ui.screen.auth.forgotpassword.ForgotPasswordScreen
 import com.techmania.maargdarshak.users.ui.screen.auth.login.LoginScreen
 import com.techmania.maargdarshak.users.ui.screen.auth.signup.SignupScreen
 import com.techmania.maargdarshak.users.ui.screen.busresults.BusResultsScreen
@@ -34,6 +35,9 @@ fun NavGraph(
         composable(route = Screen.Signup.route) {
             SignupScreen(navController = navController)
         }
+        composable(route = Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(navController = navController)
+        }
         composable(route = Screen.Permission.route) {
             PermissionRequestScreen(navController = navController)
         }
@@ -43,17 +47,6 @@ fun NavGraph(
             MainScreen(navController = navController)
         }
 
-        // The map screen remains a separate destination outside the bottom nav
-        composable(
-            route = Screen.LiveMap.route,
-            arguments = listOf(
-                navArgument("origin") { type = NavType.StringType },
-                navArgument("destination") { type = NavType.StringType },
-                navArgument("transportType") { type = NavType.StringType }
-            )
-        ) {
-            LiveMapScreen(navController = navController)
-        }
 
         // ADD THIS NEW BLOCK for the search screen
         composable(route = Screen.PlaceSearch.route) {
@@ -69,6 +62,16 @@ fun NavGraph(
         ) {
             // The ViewModel will automatically receive these arguments
             BusResultsScreen(navController = navController)
+        }
+
+        composable(
+            route = Screen.LiveMap.route,
+            arguments = listOf(
+                navArgument("busId") { type = NavType.StringType },
+                navArgument("routeId") { type = NavType.StringType }
+            )
+        ) {
+            LiveMapScreen(navController = navController)
         }
 
     }

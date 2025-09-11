@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.techmania.maargdarshak.data.Resource
 import com.techmania.maargdarshak.data.repository.TripRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,6 +23,10 @@ class BusResultsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(BusResultsUiState())
     val uiState = _uiState.asStateFlow()
+
+    // ADD THESE TWO LINES
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
 
     private val origin: String = savedStateHandle["origin"] ?: "Unknown"
     private val destination: String = savedStateHandle["destination"] ?: "Unknown"
@@ -47,7 +53,13 @@ class BusResultsViewModel @Inject constructor(
         }
     }
 
+    sealed class NavigationEvent {
+        data class NavigateToMap(val busId: String, val routeId: String) : NavigationEvent()
+    }
+
     fun onTripSelected(trip: Trip) {
-        // TODO: Navigate to the LiveMapScreen for this specific trip/bus
+        viewModelScope.launch {
+            _navigationEvent.emit(NavigationEvent.NavigateToMap(trip.busId, trip.routeId))
+        }
     }
 }

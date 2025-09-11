@@ -61,4 +61,15 @@ class TripRepository @Inject constructor(
         }
     }
 
+    suspend fun getRouteDetails(routeId: String): Resource<com.techmania.maargdarshak.data.model.Route> {
+        return try {
+            val document = firestore.collection("routes").document(routeId).get().await()
+            val route = document.toObject(com.techmania.maargdarshak.data.model.Route::class.java)
+            Resource.Success(route!!)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Failed to fetch route details.")
+        }
+    }
+
+
 }

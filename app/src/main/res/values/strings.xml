@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">MaargDarshak</string>
+
+    <string name="default_web_client_id">379672269360-pvhif8rkh7sdfc5s1je70osj7u33q9vm.apps.googleusercontent.com</string>
+
 </resources>

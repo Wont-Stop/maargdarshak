@@ -61,4 +61,21 @@ class MapRepository @Inject constructor(
             Resource.Error(e.message ?: "Failed to get directions.")
         }
     }
+
+    fun getLiveVehicleDetails(busId: String): Flow<Vehicle> = callbackFlow {
+        val docRef = firestore.collection("vehicles").document(busId)
+
+        val listener = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            val vehicle = snapshot?.toObject(Vehicle::class.java)
+            if (vehicle != null) {
+                trySend(vehicle).isSuccess
+            }
+        }
+        awaitClose { listener.remove() }
+    }
+
 }
