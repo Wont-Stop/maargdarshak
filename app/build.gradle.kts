@@ -38,6 +38,9 @@ android {
             "\"${localProperties.getProperty("MAPS_API_KEY")}\""
         )
 
+        // In android -> defaultConfig
+        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY")
+
 
     }
 
