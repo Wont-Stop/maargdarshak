@@ -34,7 +34,6 @@ class MapRepository @Inject constructor(
                 val vehicles = snapshot.documents.mapNotNull { doc ->
                     val geoPoint = doc.getGeoPoint("location") ?: GeoPoint(0.0, 0.0)
                     Vehicle(
-                        id = doc.id,
                         location = geoPoint,
                         routeId = doc.getString("routeId") ?: ""
                     )
@@ -47,9 +46,9 @@ class MapRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
 
-    suspend fun getDirections(origin: String, destination: String): Resource<List<LatLng>> {
+    suspend fun getDirections(origin: String, destination: String, waypoints: String?): Resource<List<LatLng>> {
         return try {
-            val response = directionsApi.getDirections(origin, destination, BuildConfig.MAPS_API_KEY)
+            val response = directionsApi.getDirections(origin, destination, waypoints, BuildConfig.MAPS_API_KEY)
             if (response.routes.isNotEmpty()) {
                 val points = response.routes[0].overview_polyline.points
                 val decodedPath = PolyUtil.decode(points)

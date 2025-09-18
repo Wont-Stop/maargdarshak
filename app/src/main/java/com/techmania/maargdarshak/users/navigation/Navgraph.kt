@@ -71,7 +71,10 @@ fun NavGraph(
             route = Screen.LiveMap.route,
             arguments = listOf(
                 navArgument("busId") { type = NavType.StringType },
-                navArgument("routeId") { type = NavType.StringType }
+                navArgument("routeId") { type = NavType.StringType },
+                // ADD THESE TWO ARGUMENTS
+                navArgument("originStopName") { type = NavType.StringType },
+                navArgument("destinationStopName") { type = NavType.StringType }
             )
         ) {
             LiveMapScreen(navController = navController)

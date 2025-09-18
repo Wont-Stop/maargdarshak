@@ -13,13 +13,23 @@ data class VehicleUiState(
     val type: TransportType
 )
 
+data class StopInfo(
+    val id: String,
+    val name: String,
+    val position: LatLng
+)
+
 // The rest of your UI state remains the same for now
 data class LiveMapUiState(
-    val origin: MapLocation? = null,
-    val destination: MapLocation? = null,
     val routePolyline: List<LatLng> = emptyList(),
-    val vehicles: List<VehicleUiState> = emptyList(), // This now uses VehicleUiState
-    val bottomSheetInfo: BottomSheetInfo? = null,
+    val highlightedPolyline: List<LatLng> = emptyList(), // <-- ADD THIS
+    val destinationStopName: String = "", // <-- ADD THIS
+    val stops: List<StopInfo> = emptyList(), // Will hold the details of each stop on the route
+    val liveLocation: LatLng? = null,
+    val liveSpeed: String = "0 km/h",
+    val vacantSeats: Int = 0,
+    val statusMessage: String = "Fetching status...",
+    val isTracking: Boolean = false,
     val isLoading: Boolean = true,
     val error: String? = null
 )

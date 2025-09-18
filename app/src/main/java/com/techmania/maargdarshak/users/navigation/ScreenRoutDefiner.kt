@@ -16,9 +16,14 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile") // <-- ADD THIS NEW ROUTE
 
     // Route for the map screen with arguments
-    object LiveMap : Screen("map/{busId}/{routeId}") {
-        fun createRoute(busId: String, routeId: String): String {
-            return "map/$busId/$routeId"
+    object LiveMap : Screen("map/{busId}/{routeId}/{originStopName}/{destinationStopName}") {
+        fun createRoute(
+            busId: String,
+            routeId: String,
+            originStopName: String,
+            destinationStopName: String
+        ): String {
+            return "map/$busId/$routeId/$originStopName/$destinationStopName"
         }
     }
 

@@ -61,6 +61,36 @@ class TripRepository @Inject constructor(
         }
     }
 
+    suspend fun getStopsDetails(stopIds: List<String>): Resource<List<Pair<String, com.google.firebase.firestore.GeoPoint>>> {
+        if (stopIds.isEmpty()) {
+            return Resource.Success(emptyList())
+        }
+        return try {
+            val stopsQuery = firestore.collection("stops")
+                .whereIn(com.google.firebase.firestore.FieldPath.documentId(), stopIds)
+                .get()
+                .await()
+
+            // Use a map to easily look up details by ID
+            val stopsDetailsMap = stopsQuery.documents.associate { doc ->
+                val name = doc.getString("name") ?: "Unknown Stop"
+                val geoPoint = doc.getGeoPoint("location") ?: com.google.firebase.firestore.GeoPoint(0.0, 0.0)
+                doc.id to (name to geoPoint)
+            }
+
+            // Reconstruct the list in the original order provided by the route
+            val orderedStops = stopIds.mapNotNull { id ->
+                stopsDetailsMap[id]?.let { (name, geoPoint) ->
+                    name to geoPoint
+                }
+            }
+
+            Resource.Success(orderedStops)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Failed to fetch stop details.")
+        }
+    }
+
     suspend fun getRouteDetails(routeId: String): Resource<com.techmania.maargdarshak.data.model.Route> {
         return try {
             val document = firestore.collection("routes").document(routeId).get().await()

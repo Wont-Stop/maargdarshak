@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -22,7 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.techmania.maargdarshak.users.navigation.Screen
 import com.techmania.maargdarshak.users.ui.screen.shared.EmptyStateScreen
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +36,23 @@ fun BusResultsScreen(
     viewModel: BusResultsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = true) {
+        viewModel.navigationEvent.collectLatest { event ->
+            when (event) {
+                is BusResultsViewModel.NavigationEvent.NavigateToMap -> {
+                    // Use the helper function from your Screen class to build the route
+                    val route = Screen.LiveMap.createRoute(
+                        busId = event.busId,
+                        routeId = event.routeId,
+                        originStopName = event.origin,
+                        destinationStopName = event.destination
+                    )
+                    navController.navigate(route)
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {

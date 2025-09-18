@@ -54,12 +54,24 @@ class BusResultsViewModel @Inject constructor(
     }
 
     sealed class NavigationEvent {
-        data class NavigateToMap(val busId: String, val routeId: String) : NavigationEvent()
+        data class NavigateToMap(
+            val busId: String,
+            val routeId: String,
+            val origin: String,
+            val destination: String
+        ) : NavigationEvent()
     }
 
     fun onTripSelected(trip: Trip) {
         viewModelScope.launch {
-            _navigationEvent.emit(NavigationEvent.NavigateToMap(trip.busId, trip.routeId))
+            _navigationEvent.emit(
+                NavigationEvent.NavigateToMap(
+                    busId = trip.busId,
+                    routeId = trip.routeId,
+                    origin = origin, // Pass the origin stored in the ViewModel
+                    destination = destination // Pass the destination stored in the ViewModel
+                )
+            )
         }
     }
 }
