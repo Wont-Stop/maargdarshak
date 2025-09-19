@@ -14,7 +14,7 @@ data class Trip(
     val busType: String = "A/C Seater", // Assuming you add this
     val departureTime: Date? = null,
     val arrivalTime: Date? = null,
-    val fare: Double = 0.0,
+    val fare: Int = 0,
     val seatsAvailable: Int = 0,
     val rating: Double = 4.0, // Assuming you add this
     val reviewCount: Int = 0 // Assuming you add this

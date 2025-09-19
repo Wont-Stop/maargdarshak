@@ -1,61 +1,75 @@
 package com.techmania.maargdarshak.data.repository
 
+// The incorrect import is now removed
 
+import android.util.Log
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.techmania.maargdarshak.data.Resource
 import com.techmania.maargdarshak.users.ui.screen.busresults.Trip
 import kotlinx.coroutines.tasks.await
-import java.util.Date
 import javax.inject.Inject
 
 class TripRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
+
+    // THIS IS THE CORRECTED LINE THAT WAS MISSING
+    private val TAG = "TripRepositoryDebug"
+
     suspend fun findAvailableTrips(origin: String, destination: String): Resource<List<Trip>> {
+        // LOG 1: Confirm the function is called with the correct data
+        Log.d(TAG, "--- Searching for trips ---")
+        Log.d(TAG, "Origin: '$origin', Destination: '$destination'")
+
+        if (origin.isBlank() || destination.isBlank()) {
+            return Resource.Success(emptyList())
+        }
+
         return try {
-            // Step 1: Find routes that contain the origin stop.
-            // Note: Firestore can't query for two 'array-contains' in one go.
-            // A more advanced solution might use a search service, but this is a good start.
-            val routeQuery = firestore.collection("routes")
-                .whereArrayContains("stops", origin)
-                .get().await()
+            val snapshot = firestore.collection("scheduledTrips")
+                .whereArrayContains("stopNames", origin)
+                .whereGreaterThanOrEqualTo("departureTime", Timestamp.now())
+                .get()
+                .await()
 
-            // Step 2: From those routes, find the ones that also contain the destination.
-            val matchingRouteIds = routeQuery.documents.filter {
-                val stops = it.get("stops") as? List<String> ?: emptyList()
-                stops.contains(destination) && stops.indexOf(origin) < stops.indexOf(destination)
-            }.map { it.id }
+            // LOG 2: Check if Firestore returns ANY documents for the origin
+            Log.d(TAG, "Step 1 (Firestore Query): Found ${snapshot.size()} documents matching origin and time.")
 
-            if (matchingRouteIds.isEmpty()) {
-                return Resource.Success(emptyList())
+            val validTrips = snapshot.documents.filter { doc ->
+                val stopNames = doc.get("stopNames") as? List<*>
+                if (stopNames != null) {
+                    val originIndex = stopNames.indexOf(origin)
+                    val destinationIndex = stopNames.indexOf(destination)
+                    destinationIndex > originIndex
+                } else {
+                    false
+                }
+            }.mapNotNull { doc ->
+                doc.toObject(Trip::class.java)
             }
 
-            // Step 3: Find all scheduled trips for those matching routes that are in the future.
-            val tripQuery = firestore.collection("scheduledTrips")
-                .whereIn("routeId", matchingRouteIds)
-                .whereGreaterThan("departureTime", Date())
-                .orderBy("departureTime", Query.Direction.ASCENDING)
-                .get().await()
+            // LOG 3: Check the result of the client-side filtering
+            Log.d(TAG, "Step 2 (Client Filter): Found ${validTrips.size} valid trips after checking destination.")
+            Log.d(TAG, "------------------------")
 
-            val trips = tripQuery.toObjects(Trip::class.java)
-            Resource.Success(trips)
-
+            Resource.Success(validTrips)
         } catch (e: Exception) {
+            // LOG 4: Catch any unexpected crashes
+            Log.e(TAG, "An error occurred while finding trips. THIS IS A CRASH OR PERMISSION ISSUE.", e)
             Resource.Error(e.message ?: "An error occurred while finding trips.")
         }
     }
 
+    // ... The rest of your functions (getAllStops, etc.) remain the same
+
     suspend fun getAllStops(): Resource<List<String>> {
         return try {
-            val routesSnapshot = firestore.collection("routes").get().await()
-            // Get the 'stops' array from every route document, flatten into a single list,
-            // and remove duplicates.
-            val allStops = routesSnapshot.documents
-                .flatMap { it.get("stops") as? List<String> ?: emptyList() }
-                .distinct()
-                .sorted()
-            Resource.Success(allStops)
+            val snapshot = firestore.collection("stops").get().await()
+            val stopNames = snapshot.documents.mapNotNull { document ->
+                document.getString("name")
+            }.sorted()
+            Resource.Success(stopNames)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to fetch stops.")
         }
@@ -71,20 +85,17 @@ class TripRepository @Inject constructor(
                 .get()
                 .await()
 
-            // Use a map to easily look up details by ID
             val stopsDetailsMap = stopsQuery.documents.associate { doc ->
                 val name = doc.getString("name") ?: "Unknown Stop"
                 val geoPoint = doc.getGeoPoint("location") ?: com.google.firebase.firestore.GeoPoint(0.0, 0.0)
                 doc.id to (name to geoPoint)
             }
 
-            // Reconstruct the list in the original order provided by the route
             val orderedStops = stopIds.mapNotNull { id ->
                 stopsDetailsMap[id]?.let { (name, geoPoint) ->
                     name to geoPoint
                 }
             }
-
             Resource.Success(orderedStops)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to fetch stop details.")
@@ -100,6 +111,4 @@ class TripRepository @Inject constructor(
             Resource.Error(e.message ?: "Failed to fetch route details.")
         }
     }
-
-
 }
