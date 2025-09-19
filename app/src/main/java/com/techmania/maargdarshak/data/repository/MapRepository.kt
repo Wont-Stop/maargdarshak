@@ -1,5 +1,6 @@
 package com.techmania.maargdarshak.data.repository
 
+import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
@@ -71,6 +72,9 @@ class MapRepository @Inject constructor(
             }
             val vehicle = snapshot?.toObject(Vehicle::class.java)
             if (vehicle != null) {
+
+                Log.d("MaargdarshakApp", "Firestore listener received update. Location: ${vehicle.location}")
+
                 trySend(vehicle).isSuccess
             }
         }
